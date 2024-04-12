@@ -289,7 +289,32 @@ contract MyStore is BaseStore {
     }
 }
 
-contract ModifiersExercise { address public owner; mapping(address => bool) public approved; uint256 veryCrucialData; constructor() { owner = msg.sender; approved[msg.sender] = true; } modifier onlyOwner() { require(owner == msg.sender, "User not owner"); _; } modifier onlyApproved() { require(approved[msg.sender], "User not approved"); _; } function setApproval(address user, bool isApproved) public onlyOwner { approved[user] = isApproved; } function setVeryCrucialData(uint256 data) public onlyApproved { // Code that can only be called by approved users veryCrucialData = data; } }
+contract ModifiersExercise {
+    address public owner;
+    mapping(address => bool) public approved;
+    uint256 veryCrucialData; constructor() {
+        owner = msg.sender;
+        approved[msg.sender] = true;
+    }
+
+    modifier onlyOwner() {
+        require(owner == msg.sender, "User not owner");
+        _;
+    }
+
+    modifier onlyApproved() {
+        require(approved[msg.sender], "User not approved");
+        _;
+    }
+
+    function setApproval(address user, bool isApproved) public onlyOwner {
+        approved[user] = isApproved;
+    }
+
+    function setVeryCrucialData(uint256 data) public onlyApproved {
+         // Code that can only be called by approved users veryCrucialData = data;
+    }
+}
 
 Exercise
 Use previous contract (modifiers exercise)
