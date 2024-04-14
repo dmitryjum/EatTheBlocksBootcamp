@@ -1,0 +1,1 @@
+Notes, code examples and exercises from Eat The Blocks blockchain bootcamp.
