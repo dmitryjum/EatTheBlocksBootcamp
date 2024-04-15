@@ -59,7 +59,10 @@ contract SecureStore is BaseStore {
 contract ModifiersExercise {
     address public owner;
     mapping(address => bool) public approved;
-    uint256 veryCrucialData; constructor() {
+    
+    uint256 veryCrucialData;
+
+     constructor() {
         owner = msg.sender;
         approved[msg.sender] = true;
     }
