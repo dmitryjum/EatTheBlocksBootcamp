@@ -67,14 +67,14 @@ contract VotingSystem {
     }
 
     function determineTheWinner() external votesCasted returns(Candidate memory) {
-        Candidate memory maxVoter = candidates[candidateIds[0]];
+        winner = candidates[candidateIds[0]];
         for (uint i = 0; i < counter; i++) {
-            if (candidates[candidateIds[i]].voteCount > maxVoter.voteCount) {
-                maxVoter = candidates[candidateIds[i]];
+            if (candidates[candidateIds[i]].voteCount > winner.voteCount) {
+                winner = candidates[candidateIds[i]];
             }
         }
 
-        emit ElectionWinner(maxVoter.id, maxVoter.name, maxVoter.voteCount);
+        emit ElectionWinner(winner.id, winner.name, winner.voteCount);
         return winner;
     }
 }
