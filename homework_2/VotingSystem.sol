@@ -8,7 +8,7 @@ contract VotingSystem {
         uint voteCount;
     }
 
-    event VoteCasted(address indexed voter, uint candidateId);
+    event VoteCasted(address indexed voter, uint candidateId); // indexed events are more expensive and needed to filter on the front end
     event CandidateAdded(uint candidateId, string name);
     event ElectionWinner(uint id, string name, uint voteRatio);
 
