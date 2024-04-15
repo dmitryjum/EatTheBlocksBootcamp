@@ -13,6 +13,8 @@ contract Marketplace {
 
     event ItemListed(uint id, string name, uint price, address indexed owner);
     event ItemPurchased(uint id, string name, uint price, address indexed previousOwner, address indexed newOwner);
+    event Deposited(address indexed user, uint256 value); // only 3 indexed parameters
+    event Withdrawn(address indexed user, uint256 value)
 
     error NotEnoughEther();
     error ItemNotFound();
@@ -75,6 +77,7 @@ contract Marketplace {
         }
 
         userBalances[seller] += msg.value;
+        emit Deposited(seller, msg.value);
     }
 
     function withdraw(uint amount) external {
@@ -92,6 +95,7 @@ contract Marketplace {
         if(!success) {
             revert TransferFailed();
         }
+        emit Withdrawn(seller, amount);
     }
 
 }
