@@ -14,7 +14,14 @@ contract BoxStorageTest is Test {
     }
 
     function test_CreateBox() public {
-        // finish this test
+        uint256 width = minimumSizeInCm;
+        uint256 length = minimumSizeInCm;
+        uint256 height = minimumSizeInCm;
+        boxStorage.createBox(width, length, height);
+        (uint256 retrievedWidth, uint256 retrievedLength, uint256 retrievedHeight) = boxStorage.boxes(0);
+        assertEq(retrievedWidth, minimumSizeInCm);
+        assertEq(retrievedLength, minimumSizeInCm);
+        assertEq(retrievedHeight, minimumSizeInCm);
     }
 
     function test_RevertWhen_WidthLessThanMinimum() public {
