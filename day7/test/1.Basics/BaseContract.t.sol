@@ -2,26 +2,13 @@
 pragma solidity ^0.8.13;
 
 import {Test} from "forge-std/Test.sol";
-import {BaseContract} from "../src/BaseContract.sol";
+import {BaseContract} from "../../src/1.Basics/BaseContract.sol";
 
 contract BaseContractTest is Test {
     BaseContract public baseContract;
 
     function setUp() public {
         baseContract = new BaseContract();
-    }
-
-
-    function test_Increment() public {
-        // Arrange
-        uint256 expectedValue = 1;
-
-        // Act
-        baseContract.increment();
-
-        // Assert
-        uint256 currentNumber = baseContract.number();
-        assert(currentNumber == expectedValue);
     }
 
     function test_InitialValues() public {
@@ -36,5 +23,17 @@ contract BaseContractTest is Test {
         assertTrue(currentArrayNumber == expectedValue);
         assertTrue(currentSimpleMappingNumber == expectedValue);
         assertEq(currentNestedMappingNumber, expectedValue);
+    }
+
+    function test_Increment() public {
+        // Arrange
+        uint256 expectedValue = 1;
+
+        // Act
+        baseContract.increment();
+
+        // Assert
+        uint256 currentNumber = baseContract.number();
+        assert(currentNumber == expectedValue);
     }
 }
