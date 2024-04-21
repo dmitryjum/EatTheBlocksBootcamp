@@ -34,10 +34,20 @@ contract BoxStorageTest is Test {
     }
 
     function test_RevertWhen_LengthLessThanMinimum() public {
-        // finish this test
+        uint256 width = minimumSizeInCm;
+        uint256 length = minimumSizeInCm - 1;
+        uint256 height = minimumSizeInCm;
+        vm.expectRevert(abi.encodeWithSelector(BoxStorage.WrongLength.selector, length, minimumSizeInCm));
+
+        boxStorage.createBox(width, length, height);
     }
 
     function test_RevertWhen_HeightLessThanMinimum() public {
-        // finish this test
+        uint256 width = minimumSizeInCm;
+        uint256 length = minimumSizeInCm;
+        uint256 height = minimumSizeInCm - 1;
+        vm.expectRevert(abi.encodeWithSelector(BoxStorage.WrongHeight.selector, height, minimumSizeInCm));
+
+        boxStorage.createBox(width, length, height);
     }
 }
