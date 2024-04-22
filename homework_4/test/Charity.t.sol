@@ -16,21 +16,20 @@ contract CharityTest is Test {
 
   function setUp() public {
     donator = address(0x1);
+    charity = new Charity(owner, 2 days);
   }
 
-  function test_canDonate() public {
-    charity = new Charity(owner, 2 days);
+  function test_canDonate() public view {
     assertTrue(charity.canDonate());
   }
 
   function test_canNotDonate() public {
-    charity = new Charity(owner, 0 days);
+    vm.warp(block.timestamp + 3 days);
     assertFalse(charity.canDonate());
   }
 
   function test_donate() public {
     donationAmount = 10 ether;
-    charity = new Charity(owner, 2 days);
     hoax(donator, donationAmount);
     vm.expectEmit(true, true, true, true);
     emit Donated(donator, donationAmount);
@@ -42,7 +41,6 @@ contract CharityTest is Test {
   }
 
   function test_withdraw() public {
-    charity = new Charity(owner, 2 days);
     vm.prank(owner);
     deal(address(charity), 4 ether);
     vm.expectEmit(true, true, true, true);
@@ -53,7 +51,7 @@ contract CharityTest is Test {
 
   function test_RevertWhen_CanNotDonateAnymore() public {
     donationAmount = 10 ether;
-    charity = new Charity(owner, 0 days);
+    vm.warp(block.timestamp + 3 days);
     vm.expectRevert(abi.encodeWithSelector(Charity.CanNotDonateAnymore.selector));
     hoax(donator, donationAmount);
     charity.donate{value: donationAmount}();
@@ -61,20 +59,17 @@ contract CharityTest is Test {
 
   function test_RevertWhenNotEnoughDonationAmount() public {
     donationAmount = 0 ether;
-    charity = new Charity(owner, 2 days);
     vm.expectRevert(abi.encodeWithSelector(Charity.NotEnoughDonationAmount.selector));
     hoax(donator, donationAmount);
     charity.donate{value: donationAmount}();
   }
 
   function test_RevertNotOwner() public {
-    charity = new Charity(owner, 2 days);
     vm.expectRevert(abi.encodeWithSelector(Charity.NotOwner.selector));
     charity.withdraw(5 ether);
   }
 
   function test_RevertNotEnoughMoney() public {
-    charity = new Charity(owner, 2 days);
     vm.expectRevert(abi.encodeWithSelector(Charity.NotEnoughMoney.selector));
     vm.prank(owner);
     deal(address(charity), 4 ether);
