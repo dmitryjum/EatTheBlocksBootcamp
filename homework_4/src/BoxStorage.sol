@@ -32,4 +32,8 @@ contract BoxStorage {
 
         boxes.push(Box(_width, _length, _height));
     }
+
+    function getBox(uint256 _index) public view returns(Box memory){
+        return boxes[_index];
+    }
 }

@@ -9,6 +9,7 @@ contract CharityTest is Test {
   address owner = address(1);
   address donator;
   uint256 donationAmount;
+  uint256 moneyCollectingOffset;
   event Donated(address indexed donator, uint256 amount);
   event Withdrawn(uint256 amount);
   
@@ -16,6 +17,7 @@ contract CharityTest is Test {
 
   function setUp() public {
     donator = address(0x1);
+    moneyCollectingOffset = 2 days;
     charity = new Charity(owner, 2 days);
   }
 
@@ -24,7 +26,7 @@ contract CharityTest is Test {
   }
 
   function test_canNotDonate() public {
-    vm.warp(block.timestamp + 3 days);
+    vm.warp(block.timestamp + moneyCollectingOffset);
     assertFalse(charity.canDonate());
   }
 
@@ -51,7 +53,7 @@ contract CharityTest is Test {
 
   function test_RevertWhen_CanNotDonateAnymore() public {
     donationAmount = 10 ether;
-    vm.warp(block.timestamp + 3 days);
+    vm.warp(block.timestamp + moneyCollectingOffset);
     vm.expectRevert(abi.encodeWithSelector(Charity.CanNotDonateAnymore.selector));
     hoax(donator, donationAmount);
     charity.donate{value: donationAmount}();

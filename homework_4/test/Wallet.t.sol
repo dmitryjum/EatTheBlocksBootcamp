@@ -27,6 +27,7 @@ contract WalletTest is Test {
     uint256 charityBalance = address(charity).balance;
     uint256 expectedCharityAmount = (depositAmount * charityPercentage) / 1000;
     assertEq(charityBalance, expectedCharityAmount);
+    assertEq(address(wallet).balance, depositAmount - expectedCharityAmount);
   }
 
   function test_depositWhenCanNotDonate() public {
