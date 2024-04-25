@@ -20,7 +20,7 @@ contract CharityDeploymentScript is Script {
 
     charity = new Charity(owner, moneyCollectingDeadline);
     wallet = new Wallet(owner, address(charity), charityPercentage);
-    // wallet.deposit{value: 0.001 ether}();
+    wallet.deposit{value: 0.001 ether}();
 
     vm.stopBroadcast();
   }

@@ -23,7 +23,7 @@ contract MyContract {
                 mstore(add(ptr, 0x04), 0x20)   // Offset - bytes index at which the data starts
                 mstore(add(ptr, 0x24), 3)      // String length
                 mstore(add(ptr, 0x44), "abc")
-                revert(ptr, add(ptr, 0x64)).   //Covers function selector, offset, string length, and 32 bytes for the string
+                revert(ptr, add(ptr, 0x64))   //Covers function selector, offset, string length, and 32 bytes for the string
 	        }
         }
     }
