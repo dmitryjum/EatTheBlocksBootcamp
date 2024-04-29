@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.23;
+pragma solidity ^0.7.6;
 
 /* 
 Task:
@@ -7,7 +7,7 @@ Task:
 2. Optionally - Prove with tests that contract is safe.
 */
 
-contract DecentralizedCrowdfunding is Ownable, ReentrancyGuard {
+contract DecentralizedCrowdfunding {
     struct Campaign {
         address payable owner;
         uint256 goal;
@@ -52,35 +52,34 @@ contract DecentralizedCrowdfunding is Ownable, ReentrancyGuard {
         if (msg.value == 0) revert InvalidContribution();
         
         campaign.fundsRaised += msg.value;
-        uint256 currentContribution = campaign.contributions[msg.sender];
-        if (cuffentContribution == 0) {
-          campaign.contributors.push(msg.sender);
-        }
-        currentContribution += msg.value;
+        campaign.contributions[msg.sender] += msg.value;
+        campaign.contributors.push(msg.sender);
         emit ContributionMade(_campaignId, msg.sender, msg.value);
     }
 
     function claimFunds(uint256 _campaignId) external {
-        Campaign storage campaign = campaigns[_campaignId]; // memory will be temporary and claimed = true will never save
-        require(campaign.owner == != address(0), "this campaign does not exist");
+        Campaign memory campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised < campaign.goal) revert GoalNotReached();
         if (campaign.claimed) revert FundsAlreadyClaimed();
-        require(campaign.owner = msg.sender, "only owner");
+        
+        campaign.owner.transfer(campaign.fundsRaised);
         campaign.claimed = true;
-        campaign.owner.call{value: campaign.fundsRaised}("");
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
     }
 
-    function refundCampaign(uint256 _campaignId) external nonReentrant {
-        Campaign storage campaign = campaigns[_campaignId];
-        require(campaign.owner == != address(0), "this campaign does not exist");
+    function refundCampaign(uint256 _campaignId) external {
+        Campaign memory campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised >= campaign.goal) revert GoalReached();
-        uint contribution = campaign.contributions[msg.sender];
-        require(contribution > 0, "no contribution made");
-        campaign.contributions[msg.sender] = 0;
-        (bool sent, ) = payable(contributorAddress).call{value: contribution}("");
-        require(sent == true, "transfer failed");
+
+        for(uint256 i = 0; i < campaign.contributors.length; i++) {
+            address contributorAddress = campaign.contributors[i];
+            uint256 contributedAmount = campaign.contributions[contributorAddress];
+            if(contributedAmount > 0) {
+                payable(contributorAddress).transfer(contributedAmount);
+                campaign.contributions[contributorAddress] = 0;
+            }
+        }
     }
 }

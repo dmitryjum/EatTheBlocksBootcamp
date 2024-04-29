@@ -1,25 +1,25 @@
 pragma solidity 0.8.23;
 
-contract Counter {
-    uint256 private count;
+// contract Counter {
+//     uint256 private count;
 
-    function increment() public {
-        count += 1;
-    }
+//     function increment() public {
+//         count += 1;
+//     }
 
-    function decrement() public {
-        require(count > 0, "Counter: cannot decrement below 0");
-        count -= 1;
-    }
+//     function decrement() public {
+//         require(count > 0, "Counter: cannot decrement below 0");
+//         count -= 1;
+//     }
 
-    function reset() public {
-        count = 0;
-    }
+//     function reset() public {
+//         count = 0;
+//     }
 
-    function getCount() public view returns (uint256) {
-        return count;
-    }
-}
+//     function getCount() public view returns (uint256) {
+//         return count;
+//     }
+// }
 
 contract CounterYul {
   uint256 private count;
@@ -51,7 +51,7 @@ contract CounterYul {
     }
   }
 
-  function getCount() public view returns (uint currentCount) {
+  function getCount() public view returns (uint256 currentCount) {
     assembly {
         currentCount := sload(count.slot)
     }

@@ -4,10 +4,12 @@ contract BatchProcessor {
     mapping(address => uint) private balances;
 
     event Distribution (
-      address distributor,
       address recipient,
       uint amount
     )
+
+    error RecipientsAmdAmountsNotEqualError();
+    error BalanceTooLowError();
 
     function deposit() external payable {
         balances[msg.sender] += msg.value;
@@ -15,14 +17,18 @@ contract BatchProcessor {
 
     function batchProcess(address[] calldata recipients, uint[] calldata amounts) external {
         uint recipientsLength = recipients.length;
-        require(recipientsLength == amounts.length, "Arrays must be of equal length");
+        if (recipientsLength != amounts.length) {
+            revert RecipientsAmdAmountsNotEqualError();
+        }
         uint currentBalance = balances[msg.sender];
         for (uint i = 0; i < recipientsLength; i++) {
             uint amount = amounts[i]
-            require(currentBalance >= amount, "Insufficient balance");
+            if (currentBalance < amounts[i]) {
+                revert BalanceTooLowError();
+            }
             currentBalance -= amount;
             balances[recipients[i]] += amount;
-            emit Distribution(msg.sender, recipient[i], amount)
+            emit Distribution(recipient[i], amount)
         }
     }
 }
