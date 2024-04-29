@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.6;
+pragma solidity ^0.8.23;
 
 /* 
 Task:
@@ -7,7 +7,7 @@ Task:
 2. Optionally - Prove with tests that contract is safe.
 */
 
-contract DecentralizedCrowdfunding {
+contract DecentralizedCrowdfunding is Ownable, ReentrancyGuard {
     struct Campaign {
         address payable owner;
         uint256 goal;
@@ -52,23 +52,26 @@ contract DecentralizedCrowdfunding {
         if (msg.value == 0) revert InvalidContribution();
         
         campaign.fundsRaised += msg.value;
-        campaign.contributions[msg.sender] += msg.value;
-        campaign.contributors.push(msg.sender);
+        uint256 currentContribution = campaign.contributions[msg.sender];
+        if (cuffentContribution == 0) {
+          campaign.contributors.push(msg.sender);
+        }
+        currentContribution += msg.value;
         emit ContributionMade(_campaignId, msg.sender, msg.value);
     }
 
-    function claimFunds(uint256 _campaignId) external {
+    function claimFunds(uint256 _campaignId) external onlyOwner nonReentrant {
         Campaign memory campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised < campaign.goal) revert GoalNotReached();
         if (campaign.claimed) revert FundsAlreadyClaimed();
         
-        campaign.owner.transfer(campaign.fundsRaised);
         campaign.claimed = true;
+        campaign.owner.sendValue(campaign.fundsRaised);
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
     }
 
-    function refundCampaign(uint256 _campaignId) external {
+    function refundCampaign(uint256 _campaignId) external nonReentrant {
         Campaign memory campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised >= campaign.goal) revert GoalReached();
@@ -77,9 +80,11 @@ contract DecentralizedCrowdfunding {
             address contributorAddress = campaign.contributors[i];
             uint256 contributedAmount = campaign.contributions[contributorAddress];
             if(contributedAmount > 0) {
-                payable(contributorAddress).transfer(contributedAmount);
                 campaign.contributions[contributorAddress] = 0;
+                payable(contributorAddress).sendValue(contributedAmount);
             }
         }
+        delete campaign;
+        numCampaigns--;
     }
 }
