@@ -162,7 +162,7 @@ contract ClaimFundsTest is DecentralizedCrowdfundingBaseTest {
     }
 
     function test_RevertIf_CampaignNotExists() public {
-        vm.expectRevert("Campaign not exists");
+        vm.expectRevert("Campaign does not exist");
         claimFunds(type(uint256).max);
     }
 
@@ -228,7 +228,7 @@ contract WithdrawContributionTest is DecentralizedCrowdfundingBaseTest {
     }
 
     function test_RevertIf_CampaignNotExists() public {
-        vm.expectRevert("Campaign not exists");
+        vm.expectRevert("Campaign does not exist");
         withdrawContribution(type(uint256).max);
     }
 
