@@ -8,7 +8,7 @@ contract BatchProcessor {
       uint amount
     )
 
-    error RecipientsAmdAmountsNotEqualError();
+    error RecipientsAndAmountsNotEqualError();
     error BalanceTooLowError();
 
     function deposit() external payable {
@@ -18,7 +18,7 @@ contract BatchProcessor {
     function batchProcess(address[] calldata recipients, uint[] calldata amounts) external {
         uint recipientsLength = recipients.length;
         if (recipientsLength != amounts.length) {
-            revert RecipientsAmdAmountsNotEqualError();
+            revert RecipientsAndAmountsNotEqualError();
         }
         uint currentBalance = balances[msg.sender];
         for (uint i = 0; i < recipientsLength; i++) {
