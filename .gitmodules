@@ -7,3 +7,6 @@
 [submodule "homework_5/DecentralizedCrowdfunding/lib/forge-std"]
 	path = homework_5/DecentralizedCrowdfunding/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "day16/ETB_Nftmarketplace/lib/forge-std"]
+	path = day16/ETB_Nftmarketplace/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
