@@ -33,7 +33,7 @@ contract SecureCrowdfundingTest is Test {
     }
 }
 
-contract createCampaign is SecureCrowdfundingTest {
+contract createCampaignTest is SecureCrowdfundingTest {
     event CampaignCreated(uint256 indexed campaignId, address owner, uint256 goal, uint256 deadline);
 
     function setUp() public override {

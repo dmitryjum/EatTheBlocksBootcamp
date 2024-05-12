@@ -53,7 +53,7 @@ contract DecentralizedCrowdfunding is Ownable, ReentrancyGuard {
         
         campaign.fundsRaised += msg.value;
         uint256 currentContribution = campaign.contributions[msg.sender];
-        if (cuffentContribution == 0) {
+        if (currentContribution == 0) {
           campaign.contributors.push(msg.sender);
         }
         currentContribution += msg.value;
