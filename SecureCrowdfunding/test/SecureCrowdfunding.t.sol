@@ -11,6 +11,8 @@ contract SecureCrowdfundingTest is Test {
     uint256 goal = 3 ether;
     uint256 duration = 5 days;
     uint256 deadline = block.timestamp + duration;
+    address contributor = address(1);
+    uint256 contributeAmount = 1 ether;
 
     function setUp() public virtual {
         crowdFund = new SecureCrowdfunding();
@@ -57,5 +59,38 @@ contract createCampaignTest is SecureCrowdfundingTest {
     function test_invalidGoal() public {
         vm.expectRevert(SecureCrowdfunding.InvalidGoal.selector);
         createCampaign(0, duration);
+    }
+}
+
+contract contributeCompaignTest is SecureCrowdfundingTest {
+    event ContributionMade(uint256 indexed campaignId, address contributor, uint256 amount);
+
+    function setUp() public override {
+        super.setUp();
+        createCampaign(goal, duration);
+    }
+
+    function test_contribute() public {
+        vm.expectEmit(true, true, true, true);
+        hoax(contributor, contributeAmount);
+        emit ContributionMade(campaignId, contributor, contributeAmount);
+
+        contribute(campaignId, contributeAmount);
+        (address _owner, uint256 _goal, uint256 _deadline, uint256 _fundsRaised, bool _claimed) =
+            crowdFund.campaigns(campaignId);
+        
+        assertEq(_goal, goal);
+        assertEq(_deadline, deadline);
+        assertEq(_owner, owner);
+        assertFalse(_claimed);
+        assertEq(_fundsRaised, contributeAmount);
+    }
+
+    function test_contributeCampaignEnded() public {
+
+    }
+
+    function test_contributeInvalidContribution() public {
+        
     }
 }
