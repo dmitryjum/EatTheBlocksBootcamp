@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.18;
 
 /* 
 Task:
@@ -37,7 +37,7 @@ contract SecureCrowdfunding {
     function createCampaign(uint256 _goal, uint256 _duration) external {
         if (_goal == 0) revert InvalidGoal();
         uint256 deadline = block.timestamp + _duration;
-        Campaign storage newCampaign = campaigns[numCampaigns++];
+        Campaign storage newCampaign = campaigns[++numCampaigns];
         newCampaign.owner = payable(msg.sender);
         newCampaign.goal = _goal;
         newCampaign.deadline = deadline;
@@ -63,8 +63,8 @@ contract SecureCrowdfunding {
         if (campaign.fundsRaised < campaign.goal) revert GoalNotReached();
         if (campaign.claimed) revert FundsAlreadyClaimed();
         
-        campaign.owner.transfer(campaign.fundsRaised);
         campaign.claimed = true;
+        campaign.owner.transfer(campaign.fundsRaised);
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
     }
 
@@ -77,8 +77,8 @@ contract SecureCrowdfunding {
             address contributorAddress = campaign.contributors[i];
             uint256 contributedAmount = campaign.contributions[contributorAddress];
             if(contributedAmount > 0) {
-                payable(contributorAddress).transfer(contributedAmount);
                 campaign.contributions[contributorAddress] = 0;
+                payable(contributorAddress).transfer(contributedAmount);
             }
         }
     }
