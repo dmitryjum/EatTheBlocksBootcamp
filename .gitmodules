@@ -10,3 +10,6 @@
 [submodule "day16/ETB_Nftmarketplace/lib/forge-std"]
 	path = day16/ETB_Nftmarketplace/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "SecureCrowdfunding/lib/forge-std"]
+	path = SecureCrowdfunding/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
