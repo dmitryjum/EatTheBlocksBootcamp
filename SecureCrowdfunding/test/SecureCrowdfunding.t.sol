@@ -87,10 +87,21 @@ contract contributeCompaignTest is SecureCrowdfundingTest {
     }
 
     function test_contributeCampaignEnded() public {
-
+        hoax(contributor, contributeAmount);
+        vm.warp(deadline);
+        vm.expectRevert(SecureCrowdfunding.CampaignEnded.selector);
+        contribute(campaignId, contributeAmount);
     }
 
     function test_contributeInvalidContribution() public {
-        
+        hoax(contributor, contributeAmount);
+        vm.expectRevert(SecureCrowdfunding.InvalidContribution.selector);
+        contribute(campaignId, 0);
+    }
+
+    function test_compaignDoesNotExist() public {
+        hoax(contributor, contributeAmount);
+        vm.expectRevert(SecureCrowdfunding.InvalidCampaignId.selector);
+        contribute(type(uint256).max, contributeAmount);
     }
 }
