@@ -105,3 +105,34 @@ contract contributeCompaignTest is SecureCrowdfundingTest {
         contribute(type(uint256).max, contributeAmount);
     }
 }
+
+contract claimFundsTest is secureCrowdFundingTest {
+    event FundsClaimed(uint256 indexed campaignId, uint256 amount);
+
+    function setUp() public {
+        super.setUp();
+        createCampaign(goal, duration);
+        hoax(contributor, contributeAmount);
+        contribute(campaignId, contributeAmount);
+    }
+
+    function test_claimFunds() public {
+        
+    }
+
+    function test_CampaignNotEnded() public {
+
+    }
+
+    function InvalidCampaignId() public {
+
+    }
+
+    function test_GoalNotReached() public {
+
+    }
+
+    function FundsAlreadyClaimed() public {
+
+    }
+}

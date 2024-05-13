@@ -35,6 +35,11 @@ contract SecureCrowdfunding {
     error FundsAlreadyClaimed();
     error InvalidCampaignId();
 
+    modifier onlyExistingCampaign(uint256 _campaignId) {
+        if (_campaignId > numCampaigns || _campaignId == 0) revert InvalidCampaignId();
+        _;
+    }
+
     function createCampaign(uint256 _goal, uint256 _duration) external {
         if (_goal == 0) revert InvalidGoal();
         uint256 deadline = block.timestamp + _duration;
@@ -47,20 +52,20 @@ contract SecureCrowdfunding {
         emit CampaignCreated(numCampaigns, msg.sender, _goal, deadline);
     }
 
-    function contribute(uint256 _campaignId) external payable {
-        if (_campaignId > numCampaigns || _campaignId == 0) revert InvalidCampaignId();
+    function contribute(uint256 _campaignId) external payable onlyExistingCampaign(_campaignId) {
         Campaign storage campaign = campaigns[_campaignId];
         if (block.timestamp >= campaign.deadline) revert CampaignEnded();
         if (msg.value == 0) revert InvalidContribution();
         
         campaign.fundsRaised += msg.value;
         campaign.contributions[msg.sender] += msg.value;
-
-        campaign.contributors.push(msg.sender); // make sure contributor are unique
+        if (campaign.contributions[msg.sender] == msg.value) {
+            campaign.contributors.push(msg.sender);
+        }
         emit ContributionMade(_campaignId, msg.sender, msg.value);
     }
 
-    function claimFunds(uint256 _campaignId) external {
+    function claimFunds(uint256 _campaignId) external payable onlyExistingCampaign(_campaignId) {
         Campaign storage campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised < campaign.goal) revert GoalNotReached();
