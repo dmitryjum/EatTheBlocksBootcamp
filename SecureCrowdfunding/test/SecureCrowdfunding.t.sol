@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.18;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
+import "forge-std/console.sol";
 import {SecureCrowdfunding} from "../src/SecureCrowdfunding.sol";
 
 contract SecureCrowdfundingTest is Test {
@@ -33,9 +34,11 @@ contract SecureCrowdfundingTest is Test {
     function refundCampaign(uint256 _campaignId) internal {
         crowdFund.refundCampaign(_campaignId);
     }
+
+    receive() external payable {}
 }
 
-contract createCampaignTest is SecureCrowdfundingTest {
+contract CreateCampaignTest is SecureCrowdfundingTest {
     event CampaignCreated(uint256 indexed campaignId, address owner, uint256 goal, uint256 deadline);
 
     function setUp() public override {
@@ -62,7 +65,7 @@ contract createCampaignTest is SecureCrowdfundingTest {
     }
 }
 
-contract contributeCompaignTest is SecureCrowdfundingTest {
+contract ContributeCompaignTest is SecureCrowdfundingTest {
     event ContributionMade(uint256 indexed campaignId, address contributor, uint256 amount);
 
     function setUp() public override {
@@ -72,7 +75,7 @@ contract contributeCompaignTest is SecureCrowdfundingTest {
 
     function test_contribute() public {
         vm.expectEmit(true, true, true, true);
-        hoax(contributor, contributeAmount);
+        hoax(contributor, goal);
         emit ContributionMade(campaignId, contributor, contributeAmount);
 
         contribute(campaignId, contributeAmount);
@@ -106,33 +109,82 @@ contract contributeCompaignTest is SecureCrowdfundingTest {
     }
 }
 
-contract claimFundsTest is secureCrowdFundingTest {
+contract ClaimFundsTest is SecureCrowdfundingTest {
     event FundsClaimed(uint256 indexed campaignId, uint256 amount);
 
-    function setUp() public {
+    function setUp() public override {
         super.setUp();
         createCampaign(goal, duration);
-        hoax(contributor, contributeAmount);
-        contribute(campaignId, contributeAmount);
     }
 
     function test_claimFunds() public {
-        
+        hoax(contributor, goal);
+        contribute(campaignId, goal);
+
+        vm.warp(deadline);
+        vm.expectEmit(true, true, true, true);
+        emit FundsClaimed(campaignId, goal);
+
+        claimFunds(campaignId);
+        (,,,, bool _claimed) = crowdFund.campaigns(campaignId);
+        assertEq(_claimed, true);
     }
 
     function test_CampaignNotEnded() public {
+        hoax(contributor, goal);
+        contribute(campaignId, goal);
 
+        vm.expectRevert(SecureCrowdfunding.CampaignNotEnded.selector);
+        claimFunds(campaignId);
     }
 
-    function InvalidCampaignId() public {
+    function test_InvalidCampaignId() public {
+        hoax(contributor, goal);
+        contribute(campaignId, goal);
 
+        vm.expectRevert(SecureCrowdfunding.InvalidCampaignId.selector);
+        claimFunds(3);
     }
 
     function test_GoalNotReached() public {
+        hoax(contributor, contributeAmount);
+        contribute(campaignId, contributeAmount);
+        vm.warp(deadline);
 
+        vm.expectRevert(SecureCrowdfunding.GoalNotReached.selector);
+        claimFunds(campaignId);
     }
 
-    function FundsAlreadyClaimed() public {
+    function test_FundsAlreadyClaimed() public {
+        hoax(contributor, goal);
+        contribute(campaignId, goal);
 
+        vm.warp(deadline);
+
+        claimFunds(campaignId);
+        vm.expectRevert(SecureCrowdfunding.FundsAlreadyClaimed.selector);
+        claimFunds(campaignId);
+    }
+
+    function test_NotCampaignOwner() public {
+        hoax(contributor, goal);
+        contribute(campaignId, goal);
+        vm.warp(deadline);
+        vm.prank(contributor);
+
+        vm.expectRevert(SecureCrowdfunding.NotOwnerOfCampaign.selector);
+        claimFunds(campaignId);
+    }
+
+    function test_TransferFailed() public {
+        // create a fake contract without the receive function and try to send it there
+    }
+}
+
+contract RefundCampaignTest is SecureCrowdfundingTest {
+    // refactor refundCampaign to serve only a single donor
+    function setUp() public override {
+        super.setUp();
+        createCampaign(goal, duration);
     }
 }

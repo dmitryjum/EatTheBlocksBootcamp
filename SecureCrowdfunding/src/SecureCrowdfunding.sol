@@ -7,6 +7,8 @@ Task:
 2. Optionally - Prove with tests that contract is safe.
 */
 
+import "forge-std/console.sol";
+
 contract SecureCrowdfunding {
     struct Campaign {
         address payable owner;
@@ -34,6 +36,8 @@ contract SecureCrowdfunding {
     error GoalNotReached();
     error FundsAlreadyClaimed();
     error InvalidCampaignId();
+    error NotOwnerOfCampaign();
+    error TransferFailed();
 
     modifier onlyExistingCampaign(uint256 _campaignId) {
         if (_campaignId > numCampaigns || _campaignId == 0) revert InvalidCampaignId();
@@ -67,12 +71,14 @@ contract SecureCrowdfunding {
 
     function claimFunds(uint256 _campaignId) external payable onlyExistingCampaign(_campaignId) {
         Campaign storage campaign = campaigns[_campaignId];
+        if (msg.sender != campaign.owner) revert NotOwnerOfCampaign();
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised < campaign.goal) revert GoalNotReached();
         if (campaign.claimed) revert FundsAlreadyClaimed();
         
         campaign.claimed = true;
-        campaign.owner.transfer(campaign.fundsRaised);
+        (bool sent, ) = campaign.owner.call{ value: campaign.fundsRaised }("");
+        if(!sent) revert TransferFailed();
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
     }
 
