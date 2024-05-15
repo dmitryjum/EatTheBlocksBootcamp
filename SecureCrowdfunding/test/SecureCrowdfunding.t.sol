@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import {Test} from "forge-std/Test.sol";
 import "forge-std/console.sol";
 import {SecureCrowdfunding} from "../src/SecureCrowdfunding.sol";
+import {FakeOwner} from "./FakeOwner.sol";
 
 contract SecureCrowdfundingTest is Test {
     SecureCrowdfunding public crowdFund;
@@ -177,7 +178,20 @@ contract ClaimFundsTest is SecureCrowdfundingTest {
     }
 
     function test_TransferFailed() public {
-        // create a fake contract without the receive function and try to send it there
+        deal(contributor, goal);
+        hoax(contributor);
+        contribute(campaignId, goal);
+
+        // Warp to after the campaign deadline
+        vm.warp(block.timestamp + duration + 1);
+
+        // Ensure the contract has insufficient balance
+        deal(address(crowdFund), goal - 1);  // Deal less Ether than needed
+
+        // Prank as the owner to claim funds
+        vm.prank(owner);
+        vm.expectRevert(SecureCrowdfunding.TransferFailed.selector);
+        crowdFund.claimFunds(campaignId);
     }
 }
 
