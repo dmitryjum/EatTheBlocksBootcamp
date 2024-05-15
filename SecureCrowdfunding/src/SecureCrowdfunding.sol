@@ -82,18 +82,33 @@ contract SecureCrowdfunding {
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
     }
 
-    function refundCampaign(uint256 _campaignId) external {
+    // function refundCampaign(uint256 _campaignId) external onlyExistingCampaign(_campaignId) {
+    //     Campaign storage campaign = campaigns[_campaignId];
+    //     if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
+    //     if (campaign.fundsRaised >= campaign.goal) revert GoalReached();
+
+    //     for(uint256 i = 0; i < campaign.contributors.length; i++) {
+    //         address contributorAddress = campaign.contributors[i];
+    //         uint256 contributedAmount = campaign.contributions[contributorAddress];
+    //         if(contributedAmount > 0) {
+    //             campaign.contributions[contributorAddress] = 0;
+    //             payable(contributorAddress).transfer(contributedAmount);
+    //         }
+    //     }
+    // }
+
+    function withdrawContribution(uint256 _campaignId, address contributorAddress) external onlyExistingCampaign() {
         Campaign storage campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised >= campaign.goal) revert GoalReached();
 
-        for(uint256 i = 0; i < campaign.contributors.length; i++) {
-            address contributorAddress = campaign.contributors[i];
-            uint256 contributedAmount = campaign.contributions[contributorAddress];
-            if(contributedAmount > 0) {
-                campaign.contributions[contributorAddress] = 0;
-                payable(contributorAddress).transfer(contributedAmount);
-            }
+        uint256 contributedAmount = campaign.contributions[contributorAddress];
+        if(contributedAmount > 0) {
+            campaign.contributions[contributorAddress] = 0;
+            campaign.fundsRaised -= contributedAmount;
+            (bool sent, ) = contributorAddress.call{ value: contributedAmount }("");
+            if(!sent) revert TransferFailed();
+            payable(contributorAddress).transfer(contributedAmount);
         }
     }
 }

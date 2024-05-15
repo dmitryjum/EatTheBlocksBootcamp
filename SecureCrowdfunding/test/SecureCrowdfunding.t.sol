@@ -195,10 +195,14 @@ contract ClaimFundsTest is SecureCrowdfundingTest {
     }
 }
 
-contract RefundCampaignTest is SecureCrowdfundingTest {
+contract WithdrawContributionTest is SecureCrowdfundingTest {
     // refactor refundCampaign to serve only a single donor
     function setUp() public override {
         super.setUp();
         createCampaign(goal, duration);
+    }
+
+    function test_withdrawContributionTest() public {
+        
     }
 }
