@@ -214,4 +214,46 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
         assertEq(contributorBalanceAfterRefund, contributeAmount);
 
     }
+
+    function test_campaignNotEnded() public {
+        vm.expectRevert(SecureCrowdfunding.CampaignNotEnded.selector);
+        withdrawContribution(campaignId, contributor);
+    }
+
+    function test_GoalReached() public {
+        hoax(contributor, goal);
+        contribute(campaignId, goal);
+        vm.warp(deadline);
+        vm.expectRevert(SecureCrowdfunding.GoalReached.selector);
+        withdrawContribution(campaignId, contributor);
+    }
+
+    function test_InvalidCampaignId() public {
+        vm.warp(deadline);
+        vm.expectRevert(SecureCrowdfunding.InvalidCampaignId.selector);
+        withdrawContribution(4, contributor);
+    }
+
+    function test_TransferFailed() public {
+        deal(contributor, contributeAmount);
+        hoax(contributor);
+        contribute(campaignId, contributeAmount);
+
+        // Warp to after the campaign deadline
+        vm.warp(block.timestamp + duration + 1);
+
+        // Ensure the contract has insufficient balance
+        deal(address(crowdFund), contributeAmount - 1);  // Deal less Ether than needed
+
+        // Prank as the owner to claim funds
+        vm.prank(owner);
+        vm.expectRevert(SecureCrowdfunding.TransferFailed.selector);
+        withdrawContribution(campaignId, contributor);
+    }
+
+    function test_NoContributionMade() public {
+        vm.warp(deadline);
+        vm.expectRevert(SecureCrowdfunding.NoContributionMade.selector);
+        withdrawContribution(campaignId, address(4));
+    }
 }

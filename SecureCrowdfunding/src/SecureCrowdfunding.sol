@@ -93,6 +93,8 @@ contract SecureCrowdfunding {
             campaign.fundsRaised -= contributedAmount;
             (bool sent, ) = _contributorAddress.call{ value: contributedAmount }("");
             if(!sent) revert TransferFailed();
+        } else {
+            revert NoContributionMade();
         }
     }
 }
