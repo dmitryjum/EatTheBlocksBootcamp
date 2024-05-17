@@ -7,7 +7,7 @@ Task:
 2. Optionally - Prove with tests that contract is safe.
 */
 
-import "forge-std/console.sol";
+// import "forge-std/console.sol";
 
 contract SecureCrowdfunding {
     struct Campaign {
@@ -82,16 +82,16 @@ contract SecureCrowdfunding {
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
     }
 
-    function withdrawContribution(uint256 _campaignId, address _contributorAddress) external onlyExistingCampaign(_campaignId) {
+    function withdrawContribution(uint256 _campaignId) external onlyExistingCampaign(_campaignId) {
         Campaign storage campaign = campaigns[_campaignId];
         if (block.timestamp < campaign.deadline) revert CampaignNotEnded();
         if (campaign.fundsRaised >= campaign.goal) revert GoalReached();
 
-        uint256 contributedAmount = campaign.contributions[_contributorAddress];
+        uint256 contributedAmount = campaign.contributions[msg.sender];
         if(contributedAmount > 0) {
-            campaign.contributions[_contributorAddress] = 0;
+            campaign.contributions[msg.sender] = 0;
             campaign.fundsRaised -= contributedAmount;
-            (bool sent, ) = _contributorAddress.call{ value: contributedAmount }("");
+            (bool sent, ) = msg.sender.call{ value: contributedAmount }("");
             if(!sent) revert TransferFailed();
         } else {
             revert NoContributionMade();

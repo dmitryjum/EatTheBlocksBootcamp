@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import {Test} from "forge-std/Test.sol";
-import "forge-std/console.sol";
+// import "forge-std/console.sol";
 import {SecureCrowdfunding} from "../src/SecureCrowdfunding.sol";
 
 contract SecureCrowdfundingTest is Test {
@@ -31,8 +31,8 @@ contract SecureCrowdfundingTest is Test {
         crowdFund.claimFunds(_campaignId);
     }
 
-    function withdrawContribution(uint256 _campaignId, address _contributor) internal {
-        crowdFund.withdrawContribution(_campaignId, _contributor);
+    function withdrawContribution(uint256 _campaignId) internal {
+        crowdFund.withdrawContribution(_campaignId);
     }
 
     receive() external payable {}
@@ -206,7 +206,7 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
         uint256 contributorBalanceBeforeRefund = contributor.balance;
         (,,, uint256 _fundsRaisedBeforeWithdrawal,) = crowdFund.campaigns(campaignId);
         vm.warp(deadline);
-        withdrawContribution(campaignId, contributor);
+        withdrawContribution(campaignId);
         uint256 contributorBalanceAfterRefund = contributor.balance;
         (,,, uint256 _fundsRaisedAfterWithdrawal,) = crowdFund.campaigns(campaignId);
         assertEq(_fundsRaisedAfterWithdrawal, _fundsRaisedBeforeWithdrawal - contributeAmount);
@@ -217,7 +217,7 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
 
     function test_campaignNotEnded() public {
         vm.expectRevert(SecureCrowdfunding.CampaignNotEnded.selector);
-        withdrawContribution(campaignId, contributor);
+        withdrawContribution(campaignId);
     }
 
     function test_GoalReached() public {
@@ -225,18 +225,18 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
         contribute(campaignId, goal);
         vm.warp(deadline);
         vm.expectRevert(SecureCrowdfunding.GoalReached.selector);
-        withdrawContribution(campaignId, contributor);
+        withdrawContribution(campaignId);
     }
 
     function test_InvalidCampaignId() public {
         vm.warp(deadline);
         vm.expectRevert(SecureCrowdfunding.InvalidCampaignId.selector);
-        withdrawContribution(4, contributor);
+        withdrawContribution(4);
     }
 
     function test_TransferFailed() public {
-        deal(contributor, contributeAmount);
-        hoax(contributor);
+        // deal(contributor, contributeAmount);
+        hoax(contributor, contributeAmount);
         contribute(campaignId, contributeAmount);
 
         // Warp to after the campaign deadline
@@ -246,14 +246,15 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
         deal(address(crowdFund), contributeAmount - 1);  // Deal less Ether than needed
 
         // Prank as the owner to claim funds
-        vm.prank(owner);
+        // vm.prank(owner);
         vm.expectRevert(SecureCrowdfunding.TransferFailed.selector);
-        withdrawContribution(campaignId, contributor);
+        withdrawContribution(campaignId);
     }
 
     function test_NoContributionMade() public {
+        hoax(address(4));
         vm.warp(deadline);
         vm.expectRevert(SecureCrowdfunding.NoContributionMade.selector);
-        withdrawContribution(campaignId, address(4));
+        withdrawContribution(campaignId);
     }
 }
