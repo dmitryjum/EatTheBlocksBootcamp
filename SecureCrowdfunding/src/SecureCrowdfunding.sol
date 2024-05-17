@@ -77,9 +77,9 @@ contract SecureCrowdfunding {
         if (campaign.claimed) revert FundsAlreadyClaimed();
         
         campaign.claimed = true;
-        (bool sent, ) = campaign.owner.call{ value: campaign.fundsRaised }("");
-        if(!sent) revert TransferFailed();
         emit FundsClaimed(_campaignId, campaign.fundsRaised);
+        bool sent = campaign.owner.send(campaign.fundsRaised);
+        if(!sent) revert TransferFailed();
     }
 
     function withdrawContribution(uint256 _campaignId) external onlyExistingCampaign(_campaignId) {
@@ -91,7 +91,7 @@ contract SecureCrowdfunding {
         if(contributedAmount > 0) {
             campaign.contributions[msg.sender] = 0;
             campaign.fundsRaised -= contributedAmount;
-            (bool sent, ) = msg.sender.call{ value: contributedAmount }("");
+            bool sent = payable(msg.sender).send(contributedAmount);
             if(!sent) revert TransferFailed();
         } else {
             revert NoContributionMade();
