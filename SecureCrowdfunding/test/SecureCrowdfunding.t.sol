@@ -4,7 +4,6 @@ pragma solidity ^0.8.18;
 import {Test} from "forge-std/Test.sol";
 import "forge-std/console.sol";
 import {SecureCrowdfunding} from "../src/SecureCrowdfunding.sol";
-import {FakeOwner} from "./FakeOwner.sol";
 
 contract SecureCrowdfundingTest is Test {
     SecureCrowdfunding public crowdFund;
@@ -32,8 +31,8 @@ contract SecureCrowdfundingTest is Test {
         crowdFund.claimFunds(_campaignId);
     }
 
-    function refundCampaign(uint256 _campaignId) internal {
-        crowdFund.refundCampaign(_campaignId);
+    function withdrawContribution(uint256 _campaignId, address _contributor) internal {
+        crowdFund.withdrawContribution(_campaignId, _contributor);
     }
 
     receive() external payable {}
@@ -196,13 +195,23 @@ contract ClaimFundsTest is SecureCrowdfundingTest {
 }
 
 contract WithdrawContributionTest is SecureCrowdfundingTest {
-    // refactor refundCampaign to serve only a single donor
     function setUp() public override {
         super.setUp();
         createCampaign(goal, duration);
     }
 
     function test_withdrawContributionTest() public {
-        
+        hoax(contributor, contributeAmount);
+        contribute(campaignId, contributeAmount);
+        uint256 contributorBalanceBeforeRefund = contributor.balance;
+        (,,, uint256 _fundsRaisedBeforeWithdrawal,) = crowdFund.campaigns(campaignId);
+        vm.warp(deadline);
+        withdrawContribution(campaignId, contributor);
+        uint256 contributorBalanceAfterRefund = contributor.balance;
+        (,,, uint256 _fundsRaisedAfterWithdrawal,) = crowdFund.campaigns(campaignId);
+        assertEq(_fundsRaisedAfterWithdrawal, _fundsRaisedBeforeWithdrawal - contributeAmount);
+        assertEq(contributorBalanceBeforeRefund, 0);
+        assertEq(contributorBalanceAfterRefund, contributeAmount);
+
     }
 }
