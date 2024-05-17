@@ -206,6 +206,7 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
         uint256 contributorBalanceBeforeRefund = contributor.balance;
         (,,, uint256 _fundsRaisedBeforeWithdrawal,) = crowdFund.campaigns(campaignId);
         vm.warp(deadline);
+        vm.prank(contributor);
         withdrawContribution(campaignId);
         uint256 contributorBalanceAfterRefund = contributor.balance;
         (,,, uint256 _fundsRaisedAfterWithdrawal,) = crowdFund.campaigns(campaignId);
@@ -246,8 +247,8 @@ contract WithdrawContributionTest is SecureCrowdfundingTest {
         deal(address(crowdFund), contributeAmount - 1);  // Deal less Ether than needed
 
         // Prank as the owner to claim funds
-        // vm.prank(owner);
         vm.expectRevert(SecureCrowdfunding.TransferFailed.selector);
+        vm.prank(contributor);
         withdrawContribution(campaignId);
     }
 
